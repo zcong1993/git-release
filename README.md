@@ -51,7 +51,7 @@ $ export GITHUB_API=http://github.company.com/api/v3/
 ### Options
 
 ```bash
-$ fls \
+$ rls \
     -t TOKEN \        # Set Github API Token
     -u USERNAME \     # Set Github username
     -r REPO \         # Set repository name
