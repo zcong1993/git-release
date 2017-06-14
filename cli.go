@@ -62,7 +62,7 @@ type Data struct {
 // Commit is type of simplify git commit log
 type Commit struct {
 	Message string
-	Hash    plumbing.Hash
+	Hash    string
 }
 
 var tpl = `
@@ -244,8 +244,29 @@ func checkErr(err error) {
 	}
 }
 
+func inquired1(commits []*github.RepositoryCommit) *Data {
+	var data Data
+	for _, commit := range commits {
+		query := fmt.Sprintf("Commit '%s' is a change of: ", commit.Commit.Message)
+		i := prompt.Choose(query, types)
+		if i == 0 {
+			data.Majors = append(data.Majors, Commit{*commit.Commit.Message, *commit.SHA})
+		}
+		if i == 1 {
+			data.Minors = append(data.Minors, Commit{*commit.Commit.Message, *commit.SHA})
+		}
+		if i == 2 {
+			data.Patches = append(data.Patches, Commit{*commit.Commit.Message, *commit.SHA})
+		}
+		if i == 4 {
+			break
+		}
+	}
+	return &data
+}
+
 func inquired(logs object.CommitIter) *Data {
-	var Data Data
+	var data Data
 	for true {
 		log, err := logs.Next()
 		if err != nil {
@@ -254,19 +275,19 @@ func inquired(logs object.CommitIter) *Data {
 		query := fmt.Sprintf("Commit '%s' is a change of: ", strings.Replace(log.Message, "\n", "", 1))
 		i := prompt.Choose(query, types)
 		if i == 0 {
-			Data.Majors = append(Data.Majors, Commit{log.Message, log.Hash})
+			data.Majors = append(data.Majors, Commit{log.Message, log.Hash})
 		}
 		if i == 1 {
-			Data.Minors = append(Data.Minors, Commit{log.Message, log.Hash})
+			data.Minors = append(data.Minors, Commit{log.Message, log.Hash})
 		}
 		if i == 2 {
-			Data.Patches = append(Data.Patches, Commit{log.Message, log.Hash})
+			data.Patches = append(data.Patches, Commit{log.Message, log.Hash})
 		}
 		if i == 4 {
 			break
 		}
 	}
-	return &Data
+	return &data
 }
 
 func formatString(s string) string {

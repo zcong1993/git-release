@@ -131,3 +131,21 @@ func (c *GitHubClient) DeleteTag(ctx context.Context, tag string) error {
 
 	return nil
 }
+
+// GetCommits is github delete tag api with error checker
+func (c *GitHubClient) GetCommits(ctx context.Context, opts *github.CommitsListOptions) ([]*github.RepositoryCommit, error) {
+	commits, res, err := c.Repositories.ListCommits(ctx, c.Owner, c.Repo, opts)
+	if err != nil {
+		if res == nil {
+			return nil, errors.Wrap(err, "failed to get commits list")
+		}
+
+		if res.StatusCode != http.StatusNotFound {
+			return nil, errors.Wrapf(err,
+				"get release tag: invalid status: %s", res.Status)
+		}
+
+		return nil, RelaseNotFound
+	}
+	return commits, nil
+}
