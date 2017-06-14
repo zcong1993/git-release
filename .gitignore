@@ -50,6 +50,8 @@ fabric.properties
 *.so
 *.dylib
 
+bin
+
 # Test binary, build with `go test -c`
 *.test
 

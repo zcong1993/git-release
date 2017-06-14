@@ -5,4 +5,4 @@ generate:
 
 build: generate
 	@echo "====> Build rls"
-	go build -ldflags "-X main.GitCommit=\"$(COMMIT)\""
+	go build -ldflags "-X main.GitCommit=\"$(COMMIT)\"" -o bin/rls
