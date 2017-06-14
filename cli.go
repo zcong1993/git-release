@@ -20,35 +20,46 @@ import (
 )
 
 const (
+	//EnvGitHubToken is environmental var to set GitHub API token
 	EnvGitHubToken = "GITHUB_TOKEN"
+	// EnvGitHubAPI is environmental var to set GitHub API base endpoint.
+	// This is used mainly by GitHub Enterprise user.
 	EnvGitHubAPI   = "GITHUB_API"
 	defaultBaseURL = "https://api.github.com/"
 )
 
 const (
+	// ExitCodeOK is exit code 0
 	ExitCodeOK int = 0
 
 	// Errors start at 10
+
+	// ExitCodeError is exit code 10
 	ExitCodeError = 10 + iota
+	// ExitCodeParseFlagsError is exit code 11
 	ExitCodeParseFlagsError
+	// ExitCodeBadArgs is exit code 12
 	ExitCodeBadArgs
-	ExitCodeInvalidURL
+	// ExitCodeTokenNotFound is exit code 13
 	ExitCodeTokenNotFound
+	// ExitCodeOwnerNotFound is exit code 14
 	ExitCodeOwnerNotFound
-	ExitCodeRepoNotFound
-	ExitCodeRleaseError
 )
 
+// CLI is the command line object
 type CLI struct {
 	outStream, errStream io.Writer
 }
 
-type Choosen struct {
-	Majors []Commit
-	Minors []Commit
+// Data is data type of commit log message user chose
+type Data struct {
+	Majors  []Commit
+	Minors  []Commit
 	Patches []Commit
-	Ignore []Commit
+	Ignore  []Commit
 }
+
+// Commit is type of simplify git commit log
 type Commit struct {
 	Message string
 	Hash    plumbing.Hash
@@ -77,13 +88,14 @@ var tpl = `
 
 var types = []string{"Major Change", "Minor Change", "Patch", "Ignore", "End"}
 
+// Run invokes the CLI with the given arguments.
 func (cli *CLI) Run(args []string) int {
 	var (
 		owner      string
 		repo       string
 		token      string
 		help       bool
-		version	   bool
+		version    bool
 		commitish  string
 		draft      bool
 		prerelease bool
@@ -205,9 +217,9 @@ func (cli *CLI) Run(args []string) int {
 	checkErr(err)
 	logs, err := g.Log(&git.LogOptions{})
 	checkErr(err)
-	choosen := inquired(logs)
+	Data := inquired(logs)
 	var bf bytes.Buffer
-	compile(choosen, &bf)
+	compile(Data, &bf)
 	req := &github.RepositoryRelease{
 		Name:            github.String(tag),
 		TagName:         github.String(tag),
@@ -232,8 +244,8 @@ func checkErr(err error) {
 	}
 }
 
-func inquired(logs object.CommitIter) *Choosen {
-	var choosen Choosen
+func inquired(logs object.CommitIter) *Data {
+	var Data Data
 	for true {
 		log, err := logs.Next()
 		if err != nil {
@@ -242,19 +254,19 @@ func inquired(logs object.CommitIter) *Choosen {
 		query := fmt.Sprintf("Commit '%s' is a change of: ", strings.Replace(log.Message, "\n", "", 1))
 		i := prompt.Choose(query, types)
 		if i == 0 {
-			choosen.Majors = append(choosen.Majors, Commit{log.Message, log.Hash})
+			Data.Majors = append(Data.Majors, Commit{log.Message, log.Hash})
 		}
 		if i == 1 {
-			choosen.Minors = append(choosen.Minors, Commit{log.Message, log.Hash})
+			Data.Minors = append(Data.Minors, Commit{log.Message, log.Hash})
 		}
 		if i == 2 {
-			choosen.Patches = append(choosen.Patches, Commit{log.Message, log.Hash})
+			Data.Patches = append(Data.Patches, Commit{log.Message, log.Hash})
 		}
 		if i == 4 {
 			break
 		}
 	}
-	return &choosen
+	return &Data
 }
 
 func formatString(s string) string {
@@ -268,19 +280,21 @@ func formatString(s string) string {
 	return string(b[0:l-3]) + "..."
 }
 
-func compile(data *Choosen, w io.Writer) {
+func compile(data *Data, w io.Writer) {
 	t := template.New("tpl")
 	t = t.Funcs(template.FuncMap{"format": formatString})
 	t = template.Must(t.Parse(tpl))
 	t.Execute(w, data)
 }
 
+// PrintRedf is helper function printf with color red
 func PrintRedf(w io.Writer, format string, args ...interface{}) {
 	format = fmt.Sprintf("[red]%s[reset]", format)
 	fmt.Fprint(w,
 		colorstring.Color(fmt.Sprintf(format, args...)))
 }
 
+// PrintBluef is helper function printf with color blue
 func PrintBluef(w io.Writer, format string, args ...interface{}) {
 	format = fmt.Sprintf("[blue]%s[reset]", format)
 	fmt.Fprint(w,

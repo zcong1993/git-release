@@ -9,11 +9,13 @@ import (
 	"time"
 )
 
+// RLS is git-release object
 type RLS struct {
 	GitHub    GitHub
 	outStream io.Writer
 }
 
+// CreateRelease is handler of create github release
 func (r *RLS) CreateRelease(ctx context.Context, req *github.RepositoryRelease, recreate bool) (*github.RepositoryRelease, error) {
 
 	// When draft release creation is requested,
@@ -57,6 +59,7 @@ func (r *RLS) CreateRelease(ctx context.Context, req *github.RepositoryRelease, 
 	return r.GitHub.CreateRelease(ctx, req)
 }
 
+// DeleteRelease is handler of delete github release
 func (r *RLS) DeleteRelease(ctx context.Context, ID int, tag string) error {
 
 	err := r.GitHub.DeleteRelease(ctx, ID)
