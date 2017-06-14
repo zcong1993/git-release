@@ -78,3 +78,8 @@ func (r *RLS) DeleteRelease(ctx context.Context, ID int, tag string) error {
 
 	return nil
 }
+
+// GetCommits pass the same function from github.go
+func (r *RLS) GetCommits(ctx context.Context, opts *github.CommitsListOptions) ([]*github.RepositoryCommit, error) {
+	return r.GitHub.GetCommits(ctx, opts)
+}

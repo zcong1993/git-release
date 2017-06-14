@@ -22,6 +22,7 @@ type GitHub interface {
 	GetRelease(ctx context.Context, tag string) (*github.RepositoryRelease, error)
 	DeleteRelease(ctx context.Context, releaseID int) error
 	DeleteTag(ctx context.Context, tag string) error
+	GetCommits(ctx context.Context, opts *github.CommitsListOptions) ([]*github.RepositoryCommit, error)
 }
 
 // GitHubClient is custom github client

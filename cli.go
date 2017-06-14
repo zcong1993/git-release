@@ -9,12 +9,8 @@ import (
 	"github.com/mitchellh/colorstring"
 	"github.com/tcnksm/go-gitconfig"
 	"github.com/tj/go-prompt"
-	"gopkg.in/src-d/go-git.v4"
-	"gopkg.in/src-d/go-git.v4/plumbing"
-	"gopkg.in/src-d/go-git.v4/plumbing/object"
 	"html/template"
 	"io"
-	"log"
 	"os"
 	"strings"
 )
@@ -146,12 +142,12 @@ func (cli *CLI) Run(args []string) int {
 		return 0
 	}
 	parsedArgs := flags.Args()
-	if len(parsedArgs) != 2 {
+	if len(parsedArgs) != 1 {
 		PrintRedf(cli.errStream,
-			"Invalid argument: you must set TAG and PATH name.")
+			"Invalid argument: you must set TAG name.")
 		return ExitCodeBadArgs
 	}
-	tag, path := parsedArgs[0], parsedArgs[1]
+	tag := parsedArgs[0]
 
 	if len(owner) == 0 {
 		var err error
@@ -213,13 +209,16 @@ func (cli *CLI) Run(args []string) int {
 		outStream: cli.outStream,
 	}
 
-	g, err := git.PlainOpen(path)
-	checkErr(err)
-	logs, err := g.Log(&git.LogOptions{})
-	checkErr(err)
-	Data := inquired(logs)
+	ctx := context.TODO()
+	// TODO(zcong1993): support commitsListOptions
+	logs, err := rls.GitHub.GetCommits(ctx, &github.CommitsListOptions{})
+	if err != nil {
+		PrintRedf(cli.errStream, "Failed to get GitHub commits: %s", err)
+		return ExitCodeError
+	}
+	data := inquired(logs)
 	var bf bytes.Buffer
-	compile(Data, &bf)
+	compile(data, &bf)
 	req := &github.RepositoryRelease{
 		Name:            github.String(tag),
 		TagName:         github.String(tag),
@@ -228,7 +227,6 @@ func (cli *CLI) Run(args []string) int {
 		TargetCommitish: github.String(commitish),
 		Body:            github.String(bf.String()),
 	}
-	ctx := context.TODO()
 	release, err := rls.CreateRelease(ctx, req, recreate)
 	if err != nil {
 		PrintRedf(cli.errStream, "Failed to create GitHub release page: %s", err)
@@ -238,16 +236,10 @@ func (cli *CLI) Run(args []string) int {
 	return ExitCodeOK
 }
 
-func checkErr(err error) {
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
-func inquired1(commits []*github.RepositoryCommit) *Data {
+func inquired(commits []*github.RepositoryCommit) *Data {
 	var data Data
 	for _, commit := range commits {
-		query := fmt.Sprintf("Commit '%s' is a change of: ", commit.Commit.Message)
+		query := fmt.Sprintf("Commit '%s' is a change of: ", *commit.Commit.Message)
 		i := prompt.Choose(query, types)
 		if i == 0 {
 			data.Majors = append(data.Majors, Commit{*commit.Commit.Message, *commit.SHA})
@@ -257,31 +249,6 @@ func inquired1(commits []*github.RepositoryCommit) *Data {
 		}
 		if i == 2 {
 			data.Patches = append(data.Patches, Commit{*commit.Commit.Message, *commit.SHA})
-		}
-		if i == 4 {
-			break
-		}
-	}
-	return &data
-}
-
-func inquired(logs object.CommitIter) *Data {
-	var data Data
-	for true {
-		log, err := logs.Next()
-		if err != nil {
-			break
-		}
-		query := fmt.Sprintf("Commit '%s' is a change of: ", strings.Replace(log.Message, "\n", "", 1))
-		i := prompt.Choose(query, types)
-		if i == 0 {
-			data.Majors = append(data.Majors, Commit{log.Message, log.Hash})
-		}
-		if i == 1 {
-			data.Minors = append(data.Minors, Commit{log.Message, log.Hash})
-		}
-		if i == 2 {
-			data.Patches = append(data.Patches, Commit{log.Message, log.Hash})
 		}
 		if i == 4 {
 			break
@@ -324,11 +291,11 @@ func PrintBluef(w io.Writer, format string, args ...interface{}) {
 
 var helpText = `
 
-	Usage: rls [options...] TAG PATH
+	Usage: rls [options...] TAG
 
 rls is a tool to create Release on Github.
 
-You must specify tag (e.g., v1.0.0) and PATH to local git workspace folder.
+You must specify tag (e.g., v1.0.0).
 
 And you also must provide GitHub API token which has enough permission
 (For a private repository you need the 'repo' scope and for a public
