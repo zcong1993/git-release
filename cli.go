@@ -258,7 +258,7 @@ func inquired(commits []*github.RepositoryCommit) *Data {
 }
 
 func formatString(s string) string {
-	l := 33
+	l := 43
 	s = strings.Replace(s, "\n", "", 1)
 	b := []byte(s)
 	s = strings.ToUpper(string(b[0])) + string(b[1:])

@@ -59,7 +59,7 @@ $ rls \
     -delete \         # Delete release and its git tag in advance if it exists
     -draft \          # Release as draft (Unpublish)
     -prerelease \     # Crate prerelease
-    TAG PATH
+    TAG
 ```
 
 ## License
