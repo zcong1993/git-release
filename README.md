@@ -20,9 +20,9 @@ $ make build
 
 ## Usage
 ```bash
-$ rls [option] TAG PATH
+$ rls [option] TAG
 ```
-`TAG` and `PATH` are required. TAG is the release tag, PATH is the repo's root path. And must config github api token first.
+`TAG` is required. TAG is the release tag. And must config github api token first.
 
 ### GitHub API Token
 
