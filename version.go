@@ -1,10 +1,10 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	latest "github.com/tcnksm/go-latest"
 	"time"
-	"bytes"
 )
 
 // Name is cli name

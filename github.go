@@ -11,11 +11,6 @@ import (
 	"net/url"
 )
 
-var (
-	// RelaseNotFound is error message of release is not found
-	RelaseNotFound = errors.New("release is not found")
-)
-
 // GitHub is custom github interface
 type GitHub interface {
 	CreateRelease(ctx context.Context, req *github.RepositoryRelease) (*github.RepositoryRelease, error)
@@ -98,7 +93,7 @@ func (c *GitHubClient) GetRelease(ctx context.Context, tag string) (*github.Repo
 				"get release tag: invalid status: %s", res.Status)
 		}
 
-		return nil, RelaseNotFound
+		return nil, fmt.Errorf("release is not found")
 	}
 
 	return release, nil
@@ -146,7 +141,7 @@ func (c *GitHubClient) GetCommits(ctx context.Context, opts *github.CommitsListO
 				"get release tag: invalid status: %s", res.Status)
 		}
 
-		return nil, RelaseNotFound
+		return nil, fmt.Errorf("release is not found")
 	}
 	return commits, nil
 }
