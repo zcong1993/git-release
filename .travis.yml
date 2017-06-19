@@ -7,4 +7,5 @@ install:
   - go get -t -v ./...
 
 script:
+  - chmod +x ./build.sh
   - make build
