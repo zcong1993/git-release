@@ -11,7 +11,7 @@ import (
 const Name = "rls"
 
 // Version is cli current version
-const Version string = "v0.2.0"
+const Version string = "v0.3.0"
 
 // GitCommit is cli current git commit hash
 var GitCommit string
