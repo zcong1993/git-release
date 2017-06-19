@@ -1,4 +1,3 @@
-#!/usr/bin/env bash
 #!/bin/bash
 set -ev
 NAME=rls
