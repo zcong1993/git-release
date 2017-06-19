@@ -29,7 +29,7 @@ func (r *RLS) CreateRelease(ctx context.Context, req *github.RepositoryRelease, 
 	// If release is not found, then create a new release.
 	release, err := r.GitHub.GetRelease(ctx, *req.TagName)
 	if err != nil {
-		if err != fmt.Errorf("release is not found") {
+		if err != RelaseNotFound {
 			return nil, errors.Wrap(err, "failed to get release")
 		}
 		if recreate {
