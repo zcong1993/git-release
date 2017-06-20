@@ -3,7 +3,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/zcong1993/git-release)](https://goreportcard.com/report/github.com/zcong1993/git-release)
 [![Build Status](https://travis-ci.org/zcong1993/git-release.svg?branch=master)](https://travis-ci.org/zcong1993/git-release)
 
-> Generate github release with changelog in a single command
+> Generate github release with changelog in a single command, like [this](https://github.com/zcong1993/git-release/releases)
 
 Based on [tcnksm/ghr](https://github.com/tcnksm/ghr)
 
